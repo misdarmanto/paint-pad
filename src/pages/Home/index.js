@@ -42,6 +42,7 @@ import TextDraw from "../../Components/Drawer/TextDraw";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import MenuIcon from "@mui/icons-material/Menu";
+import ColorPicker from "../../Components/ColorPicker";
 
 const Home = () => {
   const {
@@ -65,9 +66,10 @@ const Home = () => {
   const [undoShapes, setUndoShapes] = useState([]);
   const [redoShapes, setRedoShapes] = useState([]);
   const [deleteShapeId, setDeleteShapId] = useState(null);
+  const [defaultDrawColor, setDefaultDrawColor] = useState("#000");
 
   const theme = useTheme();
-  const isCloseDrawer = useMediaQuery(theme.breakpoints.down("sm"));
+  const smallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const stageEl = createRef();
   const layerEl = createRef();
@@ -131,7 +133,7 @@ const Home = () => {
       height: 100,
       fill: "transparent",
       id: shapeId,
-      color: "#000",
+      color: defaultDrawColor,
     };
     setRectangles([...rectangles, rectangleProperties]);
     setUndoShapes([...undoShapes, rectangleProperties]);
@@ -147,7 +149,7 @@ const Home = () => {
       height: 100,
       fill: "transparent",
       id: shapeId,
-      color: "#000",
+      color: defaultDrawColor,
     };
     setCircles([...circles, circelProperties]);
     setUndoShapes([...undoShapes, circelProperties]);
@@ -158,7 +160,7 @@ const Home = () => {
       name: "pencil",
       stage: stageEl.current.getStage(),
       layer: layerEl.current,
-      color: "#000",
+      color: defaultDrawColor,
       mode: "brush",
       stright: isStright,
     });
@@ -262,7 +264,7 @@ const Home = () => {
     setUndoShapes([...undoShapes, previousShape]);
   };
 
-  const handleSelecShape = (shape) => {
+  const handleSelectShape = (shape) => {
     setSelectedShape(shape);
   };
 
@@ -323,112 +325,169 @@ const Home = () => {
     return () => window.removeEventListener("keydown", handleDeleteShape);
   }, []);
 
+  const handleDeleteShape = () => {
+    console.log(selectedShape);
+    if (!selectedShape) return;
+    switch (selectedShape.name) {
+      case "rectangle":
+        const newRectangle = rectangles.filter((rect) => {
+          return rect.id !== selectedShape.id;
+        });
+        setRectangles(newRectangle);
+        break;
+      case "circle":
+        const newCircle = circles.filter((circ) => {
+          return circ.id !== selectedShape.id;
+        });
+        setCircles(newCircle);
+        break;
+      case "image":
+        const newImg = images.filter((img) => img.id !== selectedShape.id);
+        setImages(newImg);
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <>
+      {/* tool bar */}
       <Stack
-        direction={isCloseDrawer ? "column" : "row"}
-        m={1}
-        alignItems="center"
-        sx={{
-          padding: "2px",
-          position: isCloseDrawer ? "absolute" : "static",
-          zIndex: 2,
-        }}
-        spacing={1}
+        direction={smallScreen ? "column" : "row"}
+        sx={{ padding: "5px", borderBottom: "1px solid #e3e3e3" }}
       >
-        <FormControl>
-          <Select
-            value={""}
-            onChange={handleSelectDropDownShape}
-            sx={{ height: "30px" }}
-            displayEmpty
-            startAdornment={
-              <InputAdornment>
-                <CropSquareOutlinedIcon />
-              </InputAdornment>
-            }
-            labelId="demo-simple-select-label"
-            id="demo-simple-select-label"
-            inputProps={{ "aria-label": "Without label" }}
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <FormControl>
+            <Select
+              value={""}
+              onChange={handleSelectDropDownShape}
+              sx={{ height: "30px" }}
+              displayEmpty
+              startAdornment={
+                <InputAdornment>
+                  <CropSquareOutlinedIcon />
+                </InputAdornment>
+              }
+              labelId="demo-simple-select-label"
+              id="demo-simple-select-label"
+              inputProps={{ "aria-label": "Without label" }}
+            >
+              <MenuItem value={"square"}>
+                <ListItem>
+                  <CropSquareOutlinedIcon />
+                  <ListItemText>Square</ListItemText>
+                </ListItem>
+              </MenuItem>
+              <MenuItem value={"circle"}>
+                <ListItem>
+                  <CircleOutlinedIcon />
+                  <ListItemText>Circle</ListItemText>
+                </ListItem>
+              </MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl>
+            <Select
+              value={""}
+              onChange={handleSelectLineDropDown}
+              sx={{ height: "30px" }}
+              displayEmpty
+              startAdornment={
+                <InputAdornment>
+                  <BorderColorRoundedIcon />
+                </InputAdornment>
+              }
+              labelId="demo-simple-select-label"
+              id="demo-simple-select-label"
+              inputProps={{ "aria-label": "Without label" }}
+            >
+              <MenuItem value={"pencil"}>
+                <ListItem>
+                  <BrushIcon />
+                  <ListItemText>Pencil</ListItemText>
+                </ListItem>
+              </MenuItem>
+              <MenuItem value={"stright"}>
+                <ListItem>
+                  <BorderColorRoundedIcon />
+                  <ListItemText>Line</ListItemText>
+                </ListItem>
+              </MenuItem>
+              <MenuItem value={"eraser"}>
+                <ListItem>
+                  <AutoFixNormalOutlinedIcon />
+                  <ListItemText>Eraser</ListItemText>
+                </ListItem>
+              </MenuItem>
+            </Select>
+          </FormControl>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+            }}
           >
-            <MenuItem value={"square"}>
-              <ListItem>
-                <CropSquareOutlinedIcon />
-                <ListItemText>Square</ListItemText>
-              </ListItem>
-            </MenuItem>
-            <MenuItem value={"circle"}>
-              <ListItem>
-                <CircleOutlinedIcon />
-                <ListItemText>Circle</ListItemText>
-              </ListItem>
-            </MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControl>
-          <Select
-            value={""}
-            onChange={handleSelectLineDropDown}
-            sx={{ height: "30px", ml: 1 }}
-            displayEmpty
-            startAdornment={
-              <InputAdornment>
-                <BorderColorRoundedIcon />
-              </InputAdornment>
-            }
-            labelId="demo-simple-select-label"
-            id="demo-simple-select-label"
-            inputProps={{ "aria-label": "Without label" }}
-          >
-            <MenuItem value={"pencil"}>
-              <ListItem>
-                <BrushIcon />
-                <ListItemText>Pencil</ListItemText>
-              </ListItem>
-            </MenuItem>
-            <MenuItem value={"stright"}>
-              <ListItem>
-                <BorderColorRoundedIcon />
-                <ListItemText>Line</ListItemText>
-              </ListItem>
-            </MenuItem>
-            <MenuItem value={"eraser"}>
-              <ListItem>
-                <AutoFixNormalOutlinedIcon />
-                <ListItemText>Eraser</ListItemText>
-              </ListItem>
-            </MenuItem>
-          </Select>
-        </FormControl>
-        <IconButton onClick={drawImage}>
-          <InsertPhotoIcon />
-        </IconButton>
-        <IconButton onClick={addText}>
-          <TextFieldsIcon />
-        </IconButton>
-        <IconButton onClick={undo}>
-          <UndoIcon />
-        </IconButton>
-        <IconButton onClick={redo}>
-          <RedoIcon />
-        </IconButton>
-        <IconButton>
-          <DeleteIcon />
-        </IconButton>
-        <IconButton onClick={saveShapes}>
-          <SaveIcon />
-        </IconButton>
-      </Stack>
-
-      {/* content */}
-      {isCloseDrawer && (
-        <Stack direction="row" justifyContent={"flex-end"}>
-          <IconButton>
-            <MenuIcon />
+            <ColorPicker useIcon getColor={setDefaultDrawColor} />
+            <div
+              style={{
+                width: "35px",
+                height: "35px",
+                borderRadius: "20px",
+                marginLeft: "10px",
+                backgroundColor: defaultDrawColor,
+              }}
+            ></div>
+            <div style={{ width: "100px", marginLeft: "5px" }}>
+              <Stack direction="row" flexWrap="wrap">
+                {[
+                  "#9013fe",
+                  "#bd10e0",
+                  "#50e3c2",
+                  "#d0021b",
+                  "#4a90e2",
+                  "#9b9b9b",
+                  "#f3f3f3",
+                  "#f8e71c",
+                ].map((color, i) => (
+                  <div
+                    onClick={() => setDefaultDrawColor(color)}
+                    key={i}
+                    style={{
+                      backgroundColor: color,
+                      width: "20px",
+                      height: "20px",
+                      margin: "2px",
+                      borderRadius: "10px",
+                    }}
+                  ></div>
+                ))}
+              </Stack>
+            </div>
+          </div>
+        </Stack>
+        <Stack direction="row" alignItems="center">
+          <IconButton onClick={drawImage}>
+            <InsertPhotoIcon />
+          </IconButton>
+          <IconButton onClick={addText}>
+            <TextFieldsIcon />
+          </IconButton>
+          <IconButton onClick={undo}>
+            <UndoIcon />
+          </IconButton>
+          <IconButton onClick={redo}>
+            <RedoIcon />
+          </IconButton>
+          <IconButton onClick={handleDeleteShape}>
+            <DeleteIcon />
+          </IconButton>
+          <IconButton onClick={saveShapes}>
+            <SaveIcon />
           </IconButton>
         </Stack>
-      )}
+      </Stack>
+
       <div ref={printComponentRef}>
         <input
           style={{ display: "none" }}
@@ -444,7 +503,7 @@ const Home = () => {
           onMouseDown={(e) => {
             const clickedOnEmpty = e.target === e.target.getStage();
             if (clickedOnEmpty) {
-              handleSelecShape(null);
+              handleSelectShape(null);
             }
           }}
           style={{ backgroundColor: bgColorLayer }}
@@ -457,7 +516,7 @@ const Home = () => {
                   textProps={text}
                   isSelected={text.id === selectedShape?.id}
                   onSelect={() => {
-                    handleSelecShape(text);
+                    handleSelectShape(text);
                     setDeleteShapId(text.id);
                   }}
                   onChange={(newAttrs) => {
@@ -476,7 +535,7 @@ const Home = () => {
                   shapeProps={rect}
                   isSelected={rect.id === selectedShape?.id}
                   onSelect={() => {
-                    handleSelecShape(rect);
+                    handleSelectShape(rect);
                     setDeleteShapId(rect.id);
                     localStorage.setItem("@shape_key", JSON.stringify(rect));
                   }}
@@ -496,7 +555,7 @@ const Home = () => {
                   shapeProps={circle}
                   isSelected={circle.id === selectedShape?.id}
                   onSelect={() => {
-                    handleSelecShape(circle);
+                    handleSelectShape(circle);
                   }}
                   onChange={(newAttrs) => {
                     const circs = circles.slice();
@@ -513,7 +572,7 @@ const Home = () => {
                   imageUrl={image.content}
                   isSelected={image.id === selectedShape?.id}
                   onSelect={() => {
-                    handleSelecShape(image);
+                    handleSelectShape(image);
                   }}
                   onChange={(newAttrs) => {
                     const imgs = images.slice();

@@ -2,16 +2,16 @@ import React, { useState } from "react";
 import Drawer from "@mui/material/Drawer";
 import { Divider } from "@mui/material";
 import DesignBoard from "./DesignBoard";
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 import List from "@mui/material/List";
+import { useContextApi } from "../../lib/hooks/useContexApi";
 
 const ShapesProperties = ({ printComponentRef }) => {
-  const drawerWidth = 300;
   const theme = useTheme();
-  const isOpenDrawer = useMediaQuery(theme.breakpoints.up('sm'));
-  console.log(isOpenDrawer)
+  const isOpenDrawer = useMediaQuery(theme.breakpoints.up("sm"));
+  const drawerWidth = 300;
   return (
     <Drawer
       sx={{
